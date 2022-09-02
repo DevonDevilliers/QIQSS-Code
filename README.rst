@@ -1,9 +1,10 @@
-Template for the Read the Docs tutorial
+QIQSS Code
 =======================================
 
-This GitHub template includes fictional Python library
-with some basic Sphinx docs.
+This GitHub repository contains all the codes of the QIQSS group
+Each code is in a different file.
+Each code is documented with a readme in the file.
 
-Read the tutorial here:
-
-https://docs.readthedocs.io/en/stable/tutorial/
+Code documented using read-the-docs.
+Docs can be modified in /docs/source 
+Read-the-docs tutorial: https://docs.readthedocs.io/en/stable/tutorial/
