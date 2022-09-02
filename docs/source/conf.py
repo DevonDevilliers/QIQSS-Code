@@ -2,7 +2,7 @@
 
 # -- Project information
 
-project = 'QIQSS-Code'
+project = 'QIQSS'
 copyright = '2022, QIQSS'
 author = 'QIQSS'
 
