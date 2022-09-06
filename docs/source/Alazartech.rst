@@ -3,12 +3,12 @@ Alazartech Acquisition card
 
 Introduction
 ------------
-Card developed by Alazartech for the acquisition of signals: `Link text <https://www.alazartech.com/en/product/ats9462/13/>`_.
+Card developed by Alazartech for the acquisition of signals: `Alazartech website <https://www.alazartech.com/en/product/ats9462/13/>`_.
 It is used to acquire signals, and to analyse them to perform FFT, PSD or a Rabi experiment.
 
 Installation 
 ------------
-The code for the control of Alazartech acquisition cards is part of PyHegel, to be installed following `Link text <https://github.com/lupien/pyHegel/blob/master/README.rst>`_.
+The code for the control of Alazartech acquisition cards is part of PyHegel, to be installed following the instructions on `PyHegel repository <https://github.com/lupien/pyHegel/blob/master/README.rst>`_.
 The code is in the 'instruments' package of PyHegel, under the name 'Alazartech.py'. 
 You can detect all the Alazartech acquisition cards connected with the computer using the 'find_all_Alazartech' function.
 
