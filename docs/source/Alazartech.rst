@@ -9,7 +9,7 @@ It is used to acquire signals, and to analyse them to perform FFT, PSD or a Rabi
 Installation 
 ------------
 The code for the control of Alazartech acquisition cards is part of PyHegel, to be installed following the instructions on `PyHegel repository <https://github.com/lupien/pyHegel/blob/master/README.rst>`_.
-The code is in the 'instruments' package of PyHegel, under the name 'Alazartech.py'. 
+The code is in the :mod:`instruments` module of PyHegel, under the name 'Alazartech.py'. 
 You can detect all the Alazartech acquisition cards connected with the computer using the :py:func:`find_all_Alazartech` function.
 
 >>> instruments.find_all_Alazartech()
@@ -24,7 +24,9 @@ First, check if the card is correctly wired on the computer, then check if its p
 
 Acquiring signals
 -----------------
+
 On the back of the Alazartech card, 5 ports can be connected with coaxial cables. 
+
 * The ports "CHA" & "CHB" acquire signals on Channel A and Channel B
 * the port "TRIG IN" is to receive a signal used to trigger acquisition of channel A and/or B
 * the "AUX I/O" port is to synchronize instruments by either supplying a 5V TTL-level signal or receiving a TTL-level input signal   
