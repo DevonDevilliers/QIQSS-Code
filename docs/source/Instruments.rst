@@ -10,5 +10,4 @@ More information on PyHegel and on its installation on: `Link text <https://gith
 
 .. toctree::
 
-Alazartech
-Tektronix
+   Alazartech
