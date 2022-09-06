@@ -10,5 +10,5 @@ More information on PyHegel and on its installation on: `Link text <https://gith
 
 .. toctree::
 
-Alazartech acquisition card
-Tektronix waveform generator
+Alazartech
+Tektronix
