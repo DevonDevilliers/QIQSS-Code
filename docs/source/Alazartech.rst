@@ -27,7 +27,8 @@ Acquiring signals
 
 On the back of the Alazartech card, 5 ports can be connected with coaxial cables. 
 
-* The ports "CHA" & "CHB" acquire signals on Channel A and Channel B
-* the port "TRIG IN" is to receive a signal used to trigger acquisition of channel A and/or B
-* the "AUX I/O" port is to synchronize instruments by either supplying a 5V TTL-level signal or receiving a TTL-level input signal   
-* the "ECLK" port is to acquire signals on channel A and/or B with a sample rate between 150 and 180 MHz in 1MHz step by receiving  
+* The ports ``CHA`` & ``CHB`` acquire signals on Channel A and Channel B
+* the port ``TRIG IN`` is to receive a signal used to trigger acquisition of channel A and/or B
+* the ``AUX I/O`` port is to synchronize instruments by either supplying a 5V TTL-level signal or receiving a TTL-level input signal   
+* the ``ECLK`` port is to acquire signals on channel A and/or B with a sample rate between 150 and 180 MHz in 1MHz step by receiving  
+
