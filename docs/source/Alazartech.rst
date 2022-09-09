@@ -62,10 +62,16 @@ Acquisition ports
 
 On the back of the Alazartech card, 5 ports can be connected with coaxial cables. 
 
-* The ports ``CHA`` & ``CHB`` acquire signals on Channel A and Channel B
-* the port ``TRIG IN`` is to receive a signal used to trigger acquisition of channel A and/or B
-* the ``AUX I/O`` port is to synchronize instruments by either supplying a 5V TTL-level signal or receiving a TTL-level input signal   
-* the ``ECLK`` port is to acquire signals on channel A and/or B with a sample rate between 150 and 180 MHz in 1MHz step by receiving  
+* The ports ``CHA`` & ``CHB`` acquire signals on Channel A and Channel B.
+* the port ``TRIG IN`` is to receive a signal used to trigger acquisition of channel A and/or B.
+* the ``AUX I/O`` port is to synchronize instruments by either supplying a 5V TTL-level signal or receiving a TTL-level input signal.   
+* the ``ECLK`` port is to acquire signals on channel A and/or B with a sample rate between 150 and 180 MHz in 1MHz step by receiving.  
+
+It is possible to acquire either channel A or channel B or both of them. The device :class:`active_channels` defines a list of the channels to acquire. For each channel to acquire, :class:`trigger_channel_1` and :class:`trigger_channel_2` defines which port to use as a reference for the trigger operation, and :class:`trigger_level_1` and :class:`trigger_level_2` stores the level at which to trigger in mV. The acquisition can start when the signal reaches the trigger level in an ascending or descending way, which is defined in :class:`trigger_slope_1` and :class:`trigger_slope_2`.
+
+The internal clock of Alazartech cards enables the acquisitions to be performed only for certain sample rates. These sample rates depend on the acquisition card, but they range from 1KS/s to 4GS/s for the best cards. You can choose between using an internal clock ``INT`` and an external clock ``EXT`` by defining :class:`clock_type`.  
+
+The ``AUX I/O`` port can be configured using :class:`aux_io_mode` and :class:`aux_io_param`.
 
 .. _Alazartech acquisition types:
 Acquisition types
@@ -73,6 +79,20 @@ Acquisition types
 
 Three types of acquisition can be performed.
 
-* :py:func:`readval.get` performs a trigger operation: it acquires the signal for a duration :class:`acquisition_length_sec` at a sampling rate :class:`sampling_rate` when the signal reaches a threshold current. :py:func:`fetch.get` works similarly. If an acquisition has already been performed, it simply outputs the result of this acquisition. Otherwise, :py:func:`fetch.get` calls :py:func:`readval.get`.
-* :py:func:`readval_all.get` performs several trigger operation faster than by repeating :py:func:`readval.get`. The number of acquisitions is defined by device :class:`nbwindows`. 
-* :py:func:`ats.
+* :py:func:`readval.get` performs a trigger operation: it acquires the signal for a duration :class:`acquisition_length_sec` at a sampling rate :class:`sampling_rate` when the signal reaches a threshold current. :py:func:`fetch.get` works similarly. If an acquisition has already been performed for the channels defined in :class:`active_channels`, it simply outputs the result of this acquisition. Otherwise, :py:func:`fetch.get` calls :py:func:`readval.get`.
+* :py:func:`readval_all.get` performs several trigger operation faster than by repeating :py:func:`readval.get`. The number of acquisitions is defined by device :class:`nbwindows` and the channels to acquire are defined by :class:`active_channels`. The function :py:func:`fetch_all.get` works similarly, except it only gets data for one channel, the :class:`current_channel`.
+* :py:func:`continuous_read.get` acquires a signal right after being called. It calls :py:func:`readval.get` but with a :class:`trigger_mode` set to ``Continuous`` instead of ``Triggered``.
+
+The sampling rate, the acquisition time and the number of points per records are related as :math:`sample_rate * acquisition_length_sec = samples_per_record`. :class:`sample_rate` can only take some values, and a finer control can be obtained by using the ``ECLK`` port. Changing the sample rate impacts the number of samples per record without changing the duration of the acquisition. Changing the duration of the acquisition also impacts the number of samples per record without changing the sample rate.
+
+.. _Alazartech acquisition inner:
+Structure of an acquisition
+---------------------------
+
+Before actually performing the acquisition, some operations have to realized. The card should first be configured, which means that the sample rate, the clock used for the sampling, the size of the screen :class:`input_range`, the channels and the trigger operation should be given to the card  
+
+
+
+
+
+
