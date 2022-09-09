@@ -1,5 +1,5 @@
 Traitement Quantique
-===================================
+********************
 Traitement Quantique enables the display and analysis of multisweeps and diamonds.
 
 .. note::
