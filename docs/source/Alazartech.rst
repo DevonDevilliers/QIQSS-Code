@@ -27,7 +27,6 @@ In our case, we have only one card Alazartech, so its systemId and boardId are b
 
 Overview of the functionalities
 ===============================
-
 Working with PyHegel
 --------------------
 
@@ -84,11 +83,46 @@ Three types of acquisition can be performed.
 * :py:func:`readval_all.get` performs several trigger operation faster than by repeating :py:func:`readval.get`. The number of acquisitions is defined by device :class:`nbwindows` and the channels to acquire are defined by :class:`active_channels`. The function :py:func:`fetch_all.get` works similarly, except it only gets data for one channel, the :class:`current_channel`.
 * :py:func:`continuous_read.get` acquires a signal right after being called. It calls :py:func:`readval.get` but with a :class:`trigger_mode` set to ``Continuous`` instead of ``Triggered``.
 
-The sampling rate, the acquisition time and the number of points per records are related as :math:`sample_rate * acquisition_length_sec = samples_per_record`. :class:`sample_rate` can only take some values, and a finer control can be obtained by using the ``ECLK`` port. Changing the sample rate impacts the number of samples per record without changing the duration of the acquisition. Changing the duration of the acquisition also impacts the number of samples per record without changing the sample rate.
+The sampling rate, the acquisition time and the number of points per records are related as :math:`sample\_rate * acquisition\_per\_second = samples\_per\_record`. :class:`sample_rate` can only take some values, and a finer control can be obtained by using the ``ECLK`` port. Changing the sample rate impacts the number of samples per record without changing the duration of the acquisition. Changing the duration of the acquisition also impacts the number of samples per record without changing the sample rate.
 
 .. _Alazartech acquisition inner:
 Structure of an acquisition
 ---------------------------
 
-Before actually performing the acquisition, some operations have to be realized. The card should first be configured, which means that the :class:`sample rate`, the :class:`clock_type` used for the sampling, the size of the screen :class:`input_range`, the delay to trigger :class:`trigger_delay` should be provided to the card, alongside information about each channel 1 (channel A) and 2 (channel B), that are the channel used to trigger :class:`trigger_channel_1`/:class:`trigger_channel_2` , the level at which to trigger :class:`trigger_level_1`/:class:`trigger_level_2`, the slope for which to trigger (for an ascending or descending signal) :class:`trigger_slope_1` and :class:`trigger_slope_2`, and the limit of the bandwith :class:`bw_limited_A`/:class:`bw_limited_B`. This configuration is performed in :py:func:`instruments.ATSBoard.ConfigureBoard`. When calling this function, the board is configured if the parameters have never been provided to the card or if one parameter was modified since the previous configuration. This function is called at the beginning of all the acquisition functions.    
+Before actually performing the acquisition, some operations have to be realized. The card should first be configured, which means that the :class:`sample_rate`, the :class:`clock_type` used for the sampling, the size of the screen :class:`input_range`, the delay to trigger :class:`trigger_delay` should be provided to the card, alongside information about the ports ``AUX I/O`` (:class:`aux_io_modes` and :class:`aux_io_param`), channel ``A`` (channel 1) and ``B`` (channel 2), that are the channel used to trigger :class:`trigger_channel_1`/:class:`trigger_channel_2` , the level at which to trigger :class:`trigger_level_1`/:class:`trigger_level_2`, the slope for which to trigger (for an ascending or descending signal) :class:`trigger_slope_1` and :class:`trigger_slope_2`, and the limit of the bandwith :class:`bw_limited_A`/:class:`bw_limited_B`. This configuration is performed in :py:func:`instruments.ATSBoard.ConfigureBoard`. When calling this function, the board is configured if the parameters have never been provided to the card or if one parameter was modified since the previous configuration (the inner attribute of the card ``_boardconfigured`` stores this data). This function is called at the begining of all the acquisition functions.    
 
+Once configured, the card performs an acquisition by filling DMA Buffers in its inner memory. The number of these DMA Buffers can be changed with the device :class:`buffer_count`. In the Alazartech guide, it is adviced to have more than 2 DMA Buffers, and that having more than 10 DMA Buffers seem unnecessary. These DMA Buffers are defined by the number of bytes they contain. This number of bytes per DMA Buffer is derived from the number of samples per record :class:`samples_per_record`, the maximum number of bytes per buffer :class:`max_bytes_per_buffer`, the number of :class:`active_channels` and the number of bytes per sample (defined in the attribute ``board_info`` with the key "BytesPerSample").
+
+During an acquisition, the DMA Buffers are filled one after another and emptied in the same order in a dictionary ``data`` having keys the time ``t``, and the channels ``A`` and ``B``. This way, it is possible to use more buffers than the number of DMA Buffers. The acquisition is performed by the function :py:func:`waitAsyncBufferComplete`, that takes as parameter the address of the DMA Buffer to fill and a time after which to stop the acquisition, defined in the device :class:`timeout`.
+
+At the end of an acquisition, the data is re-written in an array with first column ``t``, and second and/or third column ``A`` and/or ``B`` (depending on the :class:`active_channels`). This way the data can be directly written in a file using the :py:func:`get` of PyHegel.
+
+.. _Alazartech PSD:
+Performing the PSD/FFT of a Signal:
+===================================
+
+Fast Fourier Transform
+----------------------
+
+The Fast Fourier Transform (FFT) of a signal having first column the time and second column the voltages of a signal can be performed using :py:func:`instruments.ATSBoard.make_fft`. The number of frequency points at which the FFT is computed is always equal to :class:`samples_per_record`. It is described by another variable in order not to mix the temporal and frequency acquisitions :class:`psd_fft_lines`. A FFT acquisition is also defined by :class:`psd_linewidth`, that is, the frequency difference between two frequencies at which the FFT is computed. This quantity is the inverse of the duration of the acquisition (in seconds). With these two parameters the FFT is computed for frequencies ranging from 0 to :math:`frac{sample\_rate}{2}` (Nyquist criteria).
+
+It is possible to ask for only a part of the FFT to be shown by modifying the range of the frequencies :class:`psd_span`. If this range is smaller than :math:`frac{sample\_rate}{2}`, it is possible to define the :class:`psd_start_freq`, :class:`psd_center_freq` or :class:`psd_end_freq` (one defines the other as :math:`f_{end} = f_{start}+f_{span}` and :math:`f_{end} = f_{center}+\frac{f_{span}}{2}`) such that only the frequencies between :class:`psd_start_freq` and :class:`psd_end_freq` are shown. The values of these devices should always be such that :math:`f_{end} \leq frac{sample\_rate}{2}`.
+
+The units the FFT acquisition should be displayed can be in ``V`` or in ``dBV``, and should be defined in :class:`psd_units`. The device :class:`fft` acquires a signal from :class:`current_channel` and calls :py:func:`make_fft`. If the value of :class:`psd_units` is not ``V`` or ``dBV`` it is set to ``V`` when calling  :py:func:`make_fft`. :class:`make_psd` calls :py:func:`make_fft` if :class:`psd_units` is ``V`` or ``dBV``. Analogously :class:`psd` acquires a signal from :class:`current_channel` and performs the psd by calling :py:func:`make_fft` if :class:`psd_units` is ``V`` or ``dBV``.
+
+Power Spectral Density
+----------------------
+
+The Power Spectral Density (PSD) of a signal is computed in :py:func:`instruments.ATSBoard.make_psd`, if the units defined in :class:`psd_units` are defined as PSD units (``V**2``, ``V**2/Hz``, ``V/sqrt(Hz)``). The Welch method is used. 
+
+* The acquisition is cut in :class:`nbwindows` of :math:`\lfloor\frac{NbSamples}{NbWindows}\rfloor` points.
+* Each sub-acquisition is multiplied by a :class:`window_function`.
+* Take the FFT of each result (number of points for the FFT defined by :class:`psd_fft_lines`, under the condition that it is lower or equal to :math:`\lfloor\frac{NbSamples}{NbWindows}\rfloor`.
+* Take the average of the square of FFTs. Output the data if the value of :class:`psd_units` is ``V**2``.
+* Divide by the bandwith to obtain units in ``V**2/Hz``. Take the square root of the result to obtain units in ``V/sqrt(Hz)``.
+
+.. _Alazartech Rabi
+Performing a Rabi experiment
+============================
+
+A Rabi experiment is composed of three stages. First, the gate voltage is high such that we are sure we load the quantum dot with an electron. After a long time, the atom is in its ground state. A microwave pulse of frequency :math:`\omega` interacts with the electron during a time :math:`t_{Rabi}` such that the electron is in its excited state with probability :math:`\cos(\omega t_{Rabi})^2`. During a second stage, we stop the microwave pulse and lower the gate voltage so that the energy of the electron is between the ground and excited state. If it is in the ground state, no current will be measured during this phase. If it is in the excited state, one current will be measured. During a third stage, the gate voltage is set low such that the electron is definitely out of the box.  
