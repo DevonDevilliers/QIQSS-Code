@@ -89,10 +89,5 @@ The sampling rate, the acquisition time and the number of points per records are
 Structure of an acquisition
 ---------------------------
 
-Before actually performing the acquisition, some operations have to realized. The card should first be configured, which means that the sample rate, the clock used for the sampling, the size of the screen :class:`input_range`, the channels and the trigger operation should be given to the card  
-
-
-
-
-
+Before actually performing the acquisition, some operations have to be realized. The card should first be configured, which means that the :class:`sample rate`, the :class:`clock_type` used for the sampling, the size of the screen :class:`input_range`, the delay to trigger :class:`trigger_delay` should be provided to the card, alongside information about each channel 1 (channel A) and 2 (channel B), that are the channel used to trigger :class:`trigger_channel_1`/:class:`trigger_channel_2` , the level at which to trigger :class:`trigger_level_1`/:class:`trigger_level_2`, the slope for which to trigger (for an ascending or descending signal) :class:`trigger_slope_1` and :class:`trigger_slope_2`, and the limit of the bandwith :class:`bw_limited_A`/:class:`bw_limited_B`. This configuration is performed in :py:func:`instruments.ATSBoard.ConfigureBoard`. When calling this function, the board is configured if the parameters have never been provided to the card or if one parameter was modified since the previous configuration. This function is called at the beginning of all the acquisition functions.    
 
