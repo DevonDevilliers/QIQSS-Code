@@ -24,6 +24,7 @@ All cards are represented by the id number of their system and their id in this 
 In our case, we have only one card Alazartech, so its systemId and boardId are both equal to 1. If no cards are detected using :py:func:`instruments.find_all_Alazartech`, the installation of the card should be checked. First, check if the card is correctly wired on the computer, then check if its pilots are well installed and finally if the SDK version should not be updated. Information about the installation of the card is found on the Alazartech website, and information about the version of the SDK and Driver are obtained using :py:func:`instruments.find_all_Alazartech`. 
 
 .. _Alazartech Overview:
+
 Overview of the functionalities
 ===============================
 
