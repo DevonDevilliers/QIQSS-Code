@@ -86,10 +86,31 @@ Acquisition types
 Three types of acquisition can be performed.
 
 * :py:func:`readval.get` performs a trigger operation: it acquires the signal for a duration :class:`acquisition_length_sec` at a sampling rate :class:`sampling_rate` when the signal reaches a threshold current. :py:func:`fetch.get` works similarly. If an acquisition has already been performed for the channels defined in :class:`active_channels`, it simply outputs the result of this acquisition. Otherwise, :py:func:`fetch.get` calls :py:func:`readval.get`.
-* :py:func:`readval_all.get` performs several trigger operation faster than by repeating :py:func:`readval.get`. The number of acquisitions is defined by device :class:`nbwindows` and the channels to acquire are defined by :class:`active_channels`. The function :py:func:`fetch_all.get` works similarly, except it only gets data for one channel, the :class:`current_channel`.
+* :py:func:`readval_all.get` performs several trigger operation faster than by repeating :py:func:`readval.get`. The number of acquisitions is defined by device :class:`nbwindows` and the channels to acquire are defined by :class:`active_channels`. The function :py:func:`fetch_all.get` works similarly, except it only gets data for one channel, the :class:`current_channel`. :class:`nbwindows` is set to :math:`\lfloor \sqrt{n} \rfloor (\lfloor \sqrt{n} \rfloor + 1)` if is not a square. 
 * :py:func:`continuous_read.get` acquires a signal right after being called. It calls :py:func:`readval.get` but with a :class:`trigger_mode` set to ``Continuous`` instead of ``Triggered``.
 
 The sampling rate, the acquisition time and the number of points per records are related as :math:`sample\_rate * acquisition\_per\_second = samples\_per\_record`. :class:`sample_rate` can only take some values, and a finer control can be obtained by using the ``ECLK`` port. Changing the sample rate impacts the number of samples per record without changing the duration of the acquisition. Changing the duration of the acquisition also impacts the number of samples per record without changing the sample rate.
+
+>>> ats = instruments.ATSBoard()
+>>> set ats.trigger_level_1, 0
+>>> set ats.sample_rate, 10e6
+>>> set ats.acquisition_length_sec, 5e-3
+>>> data = ats.readval.get()
+>>> plot(data[0], data[1])
+
+>>> set ats.nbwindows, 10
+>>> data = ats.readval_all.get()
+>>> for i in range(10):
+...     plot(data[0], data[i+1])
+
+.. image:: images/Alazartech/readval_readval_all.png
+   :width: 600
+
+>>> set ats.acquisition_length_sec, 1
+>>> get ats.continuous_read
+
+.. image:: images/Alazartech/continuous_read_long.png
+   :width: 600
 
 .. _Alazartech acquisition inner:
 Structure of an acquisition
@@ -140,3 +161,8 @@ Acquiring a Rabi experiment
 ---------------------------
 
 The :class:`rabi` device performs :class:`nbwindows` acquisitions of the :class:`current_channel` one after another using :class:`fetch_all`. Afterwards, these acquisitions are analyzed to extract the times at which the voltage goes above :class:`threshold_level_ascend` or below :class:`threshold_level_descend`. This extraction is performed by :py:func:`instruments.ATSBoard.detection_threshold`. It is possible to smooth the signal using a sliding mean filter :py:func:`instruments.ATSBoard.smooth_curve` before the detection of the thresholds. The number of points taken for the sliding mean is defined in :class:`sliding_mean_points`. If this number is 0, then the detection is directly performed on the signal.  
+
+Tests & Performances
+====================
+
+The time duration of any command on PyHegel can be computed by writing %time before the command. This way we measure the commands of the various acquisition tools.
