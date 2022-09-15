@@ -125,4 +125,12 @@ The Power Spectral Density (PSD) of a signal is computed in :py:func:`instrument
 Performing a Rabi experiment
 ============================
 
-A Rabi experiment is composed of three stages. First, the gate voltage is high such that we are sure we load the quantum dot with an electron. After a long time, the atom is in its ground state. A microwave pulse of frequency :math:`\omega` interacts with the electron during a time :math:`t_{Rabi}` such that the electron is in its excited state with probability :math:`\cos(\omega t_{Rabi})^2`. During a second stage, we stop the microwave pulse and lower the gate voltage so that the energy of the electron is between the ground and excited state. If it is in the ground state, no current will be measured during this phase. If it is in the excited state, one current will be measured. During a third stage, the gate voltage is set low such that the electron is definitely out of the box.  
+Description of a Rabi experiment
+--------------------------------
+
+A Rabi experiment is composed of three stages. First, the gate voltage is high such that we are sure we load the quantum dot with an electron. After a long time, the atom is in its ground state. A microwave pulse of frequency :math:`\omega` interacts with the electron during a time :math:`t_{Rabi}` such that the electron is in its excited state with probability :math:`\cos(\omega t_{Rabi})^2`. During a second stage, we stop the microwave pulse and lower the gate voltage so that the energy of the electron is between the ground and excited state. If it is in the ground state, no current will be measured during this phase. If it is in the excited state, a current will be measured. During a third stage, the gate voltage is set low such that the electron is definitely out of the box. The whole experiment consists in repeating these three steps many times for various duration of the microwave pulse. For each :math:`t_{Rabi}`, we compute the number of acquisitions in which a current drop was measured and divide it by the number of iterations.
+
+Acquiring a Rabi experiment
+---------------------------
+
+The :class:`rabi` device performs :class:`nbwindows` acquisitions of the :class:`current_channel` one after another using :class:`fetch_all`. Afterwards, these acquisitions are analyzed to extract the times at which the voltage goes above or beyond threshold limits 
