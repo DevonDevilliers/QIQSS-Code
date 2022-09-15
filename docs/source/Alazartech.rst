@@ -133,4 +133,4 @@ A Rabi experiment is composed of three stages. First, the gate voltage is high s
 Acquiring a Rabi experiment
 ---------------------------
 
-The :class:`rabi` device performs :class:`nbwindows` acquisitions of the :class:`current_channel` one after another using :class:`fetch_all`. Afterwards, these acquisitions are analyzed to extract the times at which the voltage goes above or beyond threshold limits 
+The :class:`rabi` device performs :class:`nbwindows` acquisitions of the :class:`current_channel` one after another using :class:`fetch_all`. Afterwards, these acquisitions are analyzed to extract the times at which the voltage goes above :class:`threshold_level_ascend` or below :class:`threshold_level_descend`. This extraction is performed by :py:func:`instruments.ATSBoard.detection_threshold`. It is possible to smooth the signal using a sliding mean filter :py:func:`instruments.ATSBoard.smooth_curve` before the detection of the thresholds. The number of points taken for the sliding mean is defined in :class:`sliding_mean_points`. If this number is 0, then the detection is directly performed on the signal.  
