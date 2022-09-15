@@ -52,6 +52,9 @@ The card can also be used to post-process signals. The FFT or the PSD of any acq
 
 It can also be used to analyse the results of a Rabi experiment using :class:`rabi`. After acquiring :class:`nbwindows` acquisitions, :py:func:`instruments.ATSBoard.detection_threshold` detects the times at which the signal crosses a threshold in a descending or ascending way (:class:`trigger_level_descend` and :class:`trigger_level_ascend`). It is possible to smooth curves using a sliding mean method involving :class:`nbpoints_sliding_mean` points with :py:func:`instruments.ATSBoard.smooth_curve`. 
 
+.. image:: images/Alazartech/Alazartech.jpg
+   :width: 600
+
 .. _Alazartech Acquisition:
 Acquiring signals
 =================
@@ -72,6 +75,9 @@ It is possible to acquire either channel A or channel B or both of them. The dev
 The internal clock of Alazartech cards enables the acquisitions to be performed only for certain sample rates. These sample rates depend on the acquisition card, but they range from 1KS/s to 4GS/s for the best cards. You can choose between using an internal clock ``INT`` and an external clock ``EXT`` by defining :class:`clock_type`.  
 
 The ``AUX I/O`` port can be configured using :class:`aux_io_mode` and :class:`aux_io_param`.
+
+.. image:: images/Alazartech/alazartech-ports.png
+   :width: 600
 
 .. _Alazartech acquisition types:
 Acquisition types
