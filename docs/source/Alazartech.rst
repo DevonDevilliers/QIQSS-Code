@@ -118,7 +118,9 @@ Structure of an acquisition
 
 Before actually performing the acquisition, some operations have to be realized. The card should first be configured, which means that the :class:`sample_rate`, the :class:`clock_type` used for the sampling, the size of the screen :class:`input_range`, the delay to trigger :class:`trigger_delay` should be provided to the card, alongside information about the ports ``AUX I/O`` (:class:`aux_io_modes` and :class:`aux_io_param`), channel ``A`` (channel 1) and ``B`` (channel 2), that are the channel used to trigger :class:`trigger_channel_1`/:class:`trigger_channel_2` , the level at which to trigger :class:`trigger_level_1`/:class:`trigger_level_2`, the slope for which to trigger (for an ascending or descending signal) :class:`trigger_slope_1` and :class:`trigger_slope_2`, and the limit of the bandwith :class:`bw_limited_A`/:class:`bw_limited_B`. This configuration is performed in :py:func:`instruments.ATSBoard.ConfigureBoard`. When calling this function, the board is configured if the parameters have never been provided to the card or if one parameter was modified since the previous configuration (the inner attribute of the card ``_boardconfigured`` stores this data). This function is called at the begining of all the acquisition functions.    
 
-Once configured, the card performs an acquisition by filling DMA Buffers in its inner memory. The number of these DMA Buffers can be changed with the device :class:`buffer_count`. In the Alazartech guide, it is adviced to have more than 2 DMA Buffers, and that having more than 10 DMA Buffers seem unnecessary. These DMA Buffers are defined by the number of bytes they contain. This number of bytes per DMA Buffer is derived from the number of samples per record :class:`samples_per_record`, the maximum number of bytes per buffer :class:`max_bytes_per_buffer`, the number of :class:`active_channels` and the number of bytes per sample (defined in the attribute ``board_info`` with the key "BytesPerSample").
+Once configured, the card performs an acquisition by filling DMA Buffers in its inner memory. The number of these DMA Buffers can be changed with the device :class:`buffer_count`. In the Alazartech guide, it is adviced to have more than 2 DMA Buffers, and that having more than 10 DMA Buffers seem unnecessary. These DMA Buffers are defined by the number of bytes they contain. This number of bytes per DMA Buffer is derived from the number of samples per record :class:`samples_per_record`, the maximum number of bytes per buffer :class:`max_bytes_per_buffer`, the number of :class:`active_channels` and the number of bytes per sample (defined in the attribute ``board_info`` with the key "BytesPerSample"). 
+
+In :class:`readval_all`, the number of trigger operations to perform (defined in :class:`nbwindows`) is redefined such that there is :math:`\lfloor\sqrt{nbwindows}\rfloor` records in each of the :math:`\lfloor\sqrt{nbwindows}\rfloor` buffers if the value of :class:`nbwindows` is a square (:math:`\lfloor\sqrt{nbwindows}\rfloor+1` buffers otherwise). Another condition for this device to work is that the value of :class:`samples_per_record` should be a multiple of 128.    
 
 During an acquisition, the DMA Buffers are filled one after another and emptied in the same order in a dictionary ``data`` having keys the time ``t``, and the channels ``A`` and ``B``. This way, it is possible to use more buffers than the number of DMA Buffers. The acquisition is performed by the function :py:func:`waitAsyncBufferComplete`, that takes as parameter the address of the DMA Buffer to fill and a time after which to stop the acquisition, defined in the device :class:`timeout`.
 
@@ -136,6 +138,12 @@ The Fast Fourier Transform (FFT) of a signal having first column the time and se
 It is possible to ask for only a part of the FFT to be shown by modifying the range of the frequencies :class:`psd_span`. If this range is smaller than :math:`\frac{sample\_rate}{2}`, it is possible to define the :class:`psd_start_freq`, :class:`psd_center_freq` or :class:`psd_end_freq` (one defines the other as :math:`f_{end} = f_{start}+f_{span}` and :math:`f_{end} = f_{center}+\frac{f_{span}}{2}`) such that only the frequencies between :class:`psd_start_freq` and :class:`psd_end_freq` are shown. The values of these devices should always be such that :math:`f_{end} \leq \frac{sample\_rate}{2}`.
 
 The units the FFT acquisition should be displayed can be in ``V`` or in ``dBV``, and should be defined in :class:`psd_units`. The device :class:`fft` acquires a signal from :class:`current_channel` and calls :py:func:`make_fft`. If the value of :class:`psd_units` is not ``V`` or ``dBV`` it is set to ``V`` when calling  :py:func:`make_fft`. :class:`make_psd` calls :py:func:`make_fft` if :class:`psd_units` is ``V`` or ``dBV``. Analogously :class:`psd` acquires a signal from :class:`current_channel` and performs the psd by calling :py:func:`make_fft` if :class:`psd_units` is ``V`` or ``dBV``.
+
+.. image:: images/Alazartech/fft.png
+   :width: 600
+
+.. image:: images/Alazartech/psd.png
+   :width: 600
 
 Power Spectral Density
 ----------------------
@@ -165,4 +173,33 @@ The :class:`rabi` device performs :class:`nbwindows` acquisitions of the :class:
 Tests & Performances
 ====================
 
-The time duration of any command on PyHegel can be computed by writing %time before the command. This way we measure the commands of the various acquisition tools.
+The time duration of any command on PyHegel can be computed by writing ``%time`` before the command. This way we measure the duration of the various acquisition tools (mean over 100 calls).
+
+.. list-table:: Time duration of some acquisition tools (mean over 100 calls)
+   :widths: 25 50 25 25
+   :header-rows: 1
+
+   * - :class:`readval`, acquisition_length_sec=5e-3
+     - :class:`readval_all`, acquisition_length_sec=5e-3, nbwindows=100
+     - :class:`continuous_read`, acquisition_length_sec=5e-3
+     - :class:`continuous_read`, acquisition_length_sec=1
+   * - 0.16s
+     - 10.58s
+     - 0.182s
+     - 1.43s
+
+It can be noticed that it is faster to call :class:`readvall_all` with :class:`nbwindows` set to 100 (takes 10.58s) than to call :class:`readval` 100 times (takes 16s). The post-processing doesn't take much more time.
+
+.. list-table:: Time duration of some post-processing tools, for a sample rate of 10MHz
+   :widths: 25 25 50 50
+   :header-rows: 1
+
+   * - :class:`rabi`, acquisition_length_sec=5e-3, nbwindows=100, sliding_mean_points=0
+     - :class:`rabi`, acquisition_length_sec=5e-3, nbwindows=100, sliding_mean_points=10
+     - :class:`fft`, acquisition_length_sec=1
+     - :class:`psd`, acquisition_length_sec=1
+   * - 10.59s
+     - 10.60s
+     - 1.69s
+     - 2.10s
+     
